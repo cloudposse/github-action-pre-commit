@@ -2,5 +2,15 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^action\\.yml$"],
+      "matchStrings": ["using: 'node(?<currentValue>\\d+)'"],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "node-version",
+      "versioningTemplate": "node"
+    }
   ]
 }

@@ -26,5 +26,5 @@ inputs:
     default: 'pre-commit fixes'
 
 runs:
-  using: 'node20'
+  using: 'node22'
   main: 'dist/index.js'
