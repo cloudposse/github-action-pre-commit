@@ -3,11 +3,14 @@ const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const util = require('util');
 
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const github = require('@actions/github');
 const tr = require('@actions/exec/lib/toolrunner');
+
+const execFile_async = util.promisify(child_process.execFile);
 
 function hashString(content) {
     const sha256 = crypto.createHash('sha256');
@@ -31,6 +34,11 @@ function addToken(url, token) {
     return url.replace(/^https:\/\//, `https://x-access-token:${token}@`);
 }
 
+async function getCommitHash(ref) {
+    const {stdout} = await execFile_async('git', ['rev-parse', ref]);
+    return stdout.trim();
+}
+
 async function main() {
     await core.group('install pre-commit', async () => {
         await exec.exec('pip', ['install', 'pre-commit']);
@@ -51,7 +59,23 @@ async function main() {
     const push = !!token && !!pr;
 
     const ret = await exec.exec('pre-commit', args, {ignoreReturnCode: push});
+    if (!restored) {
+        try {
+            await cache.saveCache(cachePaths, cacheKey);
+        } catch (e) {
+            core.warning(
+                `There was an error saving the pre-commit environments to cache:
 
+                ${e.message || e}
+
+                This only has performance implications and won't change the result of your pre-commit tests.
+                If this problem persists on your default branch, you can try to fix it by editing your '.pre-commit-config.yaml'.
+                For example try to run 'pre-commit autoupdate' or simply add a blank line.
+                This will result in a different hash value and thus a different cache target.`.replace(/^ +/gm, '')
+            );
+        }
+    }
+    
     if (ret && push) {
         // actions do not run on pushes made by actions.
         // need to make absolute sure things are good before pushing
@@ -72,10 +96,19 @@ async function main() {
                 await exec.exec('git', ['checkout', 'HEAD', '-B', branch]);
 
                 await exec.exec('git', ['commit', '-am', git_commit_message]);
+                
+                
                 const url = addToken(pr.head.repo.clone_url, token);
                 await exec.exec('git', ['push', url, 'HEAD']);
+
+                const sha = await getCommitHash('HEAD');
+                core.setOutput('committed', sha);
             });
+        } else {
+            core.setOutput('committed', '');
         }
+    } else {
+        core.setOutput('committed', '');
     }
 }
 
