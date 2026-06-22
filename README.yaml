@@ -1,0 +1,91 @@
+#
+# This is the canonical configuration for the `README.md`
+# Run `make readme` to rebuild the `README.md`
+#
+
+# Name of this project
+name: github-action-pre-commit
+
+# Tags of this project
+tags:
+  - github-action
+
+# License of this project
+license: "APACHE2"
+
+# Canonical GitHub repo
+github_repo: cloudposse/github-action-pre-commit
+
+# Badges to display
+badges:
+  - name: Latest Release
+    image: https://img.shields.io/github/release/cloudposse/github-action-pre-commit.svg?style=for-the-badge
+    url: https://github.com/cloudposse/github-action-pre-commit/releases/latest
+  - name: Last Updated
+    image: https://img.shields.io/github/last-commit/cloudposse/github-action-pre-commit.svg?style=for-the-badge
+    url: https://github.com/cloudposse/github-action-pre-commit/commits
+  - name: Slack Community
+    image: https://slack.cloudposse.com/for-the-badge.svg
+    url: https://cloudposse.com/slack
+
+# List any related terraform modules that this module may be used with or that this module depends on.
+related: []
+
+# Short description of this project
+description: A GitHub action to run pre-commit
+
+introduction: |-
+  This action is a fork of [pre-commit/action](https://github.com/pre-commit/action)
+  that adds optional features for private repositories.
+
+  Permissions required: `repo` and `workflow`.
+
+references:
+  - name: "github-actions-workflows"
+    description: "Reusable workflows for different types of projects"
+    url: "https://github.com/cloudposse/github-actions-workflows"
+
+# How to use this project
+usage: |-
+  ```yaml
+  name: pre-commit
+
+  on:
+    pull_request:
+    push:
+      branches: [main]
+
+  jobs:
+    pre-commit:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-python@v5
+        - uses: cloudposse/github-action-pre-commit@v4.0.0
+  ```
+
+  To run a specific hook or pass custom arguments:
+
+  ```yaml
+  - uses: cloudposse/github-action-pre-commit@v4.0.0
+    with:
+      extra_args: flake8 --all-files
+  ```
+
+  For private repositories, configure push-back support:
+
+  ```yaml
+  - uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
+
+  - uses: cloudposse/github-action-pre-commit@v4.0.0
+    with:
+      token: ${{ secrets.GITHUB_TOKEN }}
+      git_user_name: pre-commit
+      git_user_email: pre-commit@example.com
+      git_commit_message: pre-commit fixes
+  ```
+
+include: []
+contributors: []
