@@ -83,7 +83,7 @@ usage: |-
     with:
       token: ${{ secrets.GITHUB_TOKEN }}
       git_user_name: pre-commit
-      git_user_email: pre-commit@example.com
+      git_user_email: pre-commit@users.noreply.github.com
       git_commit_message: pre-commit fixes
   ```
 
