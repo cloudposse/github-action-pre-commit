@@ -9,6 +9,30 @@ permissions:
   pull-requests: write
 
 jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete conflicting flat 'release' branch if it exists
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'heads/release'
+              });
+              core.info('Deleted conflicting "release" branch.');
+            } catch (e) {
+              if (e.status === 404 || e.status === 422) {
+                core.info('No conflicting "release" branch found, skipping.');
+              } else {
+                throw e;
+              }
+            }
+
   github-action:
+    needs: cleanup
     uses: cloudposse/.github/.github/workflows/shared-release-branches.yml@main
     secrets: inherit
